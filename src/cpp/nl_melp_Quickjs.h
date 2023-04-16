@@ -9,11 +9,11 @@ extern "C" {
 #endif
 /*
  * Class:     nl_melp_Quickjs
- * Method:    eval
- * Signature: ([B[B)[B
+ * Method:    _eval
+ * Signature: ([B)[B
  */
-JNIEXPORT jbyteArray JNICALL Java_nl_melp_Quickjs_eval
-  (JNIEnv *, jclass, jbyteArray, jbyteArray);
+JNIEXPORT jbyteArray JNICALL Java_nl_melp_Quickjs__1eval
+  (JNIEnv *, jclass, jbyteArray);
 
 #ifdef __cplusplus
 }

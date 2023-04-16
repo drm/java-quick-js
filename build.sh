@@ -9,6 +9,8 @@ export JAVA="$(which java)"
 export CC="$(which g++)"
 export OUTPUT_JAVAC="$ROOT/out/java"
 export OUTPUT_SO="$ROOT/out/libquickjs.so"
+export QJS_HOME="/home/gerard/git/bellard/quickjs"
+export QJS_LIB="$QJS_HOME/libquickjs.a"
 
 if [ "${DEBUG:-}" -gt 0 ]; then
 	if [ "${DEBUG:-}" -gt 1 ]; then
@@ -21,30 +23,49 @@ if [ "${DEBUG:-}" -gt 0 ]; then
 fi
 
 build--java() {
-	find src/java test/java -name "*.java" -exec "$JAVAC" -d "$OUTPUT_JAVAC" '{}' +
+	find src/java test/java -name "*.java" -exec "$JAVAC" -h $ROOT/src/cpp -d "$OUTPUT_JAVAC" '{}' +
 }
 
 build--so() {
+	local flags="";
+	if [ "$DEBUG" -gt 0 ]; then
+		flags="-g";
+	fi;
+
 	mkdir -p "$ROOT/out";
 	"$CC" \
-		-shared  \
+		-Wall \
+		-shared \
+		$flags \
 		-I /usr/lib/jvm/java-17-openjdk-amd64/include/ \
 		-I /usr/lib/jvm/java-17-openjdk-amd64/include/linux/ \
+		-I $QJS_HOME/ \
 		-I "$ROOT/src/cpp" \
-		-L . \
+		-L $QJS_HOME \
 		-o $OUTPUT_SO \
-		"$ROOT/src/cpp/quickjs_jni.cc"
+		-fPIC \
+		"$ROOT/src/cpp/quickjs_jni.cc" \
+		-ldl \
+		-lpthread \
+		-lquickjs
+
 	echo "$OUTPUT_SO written"
 }
 
 build--runtest() {
-	"$JAVA" -Djava.library.path=$ROOT/out -cp "$OUTPUT_JAVAC" nl.melp.TestRunner
+	run="$JAVA -Djava.library.path=$ROOT/out -cp "$OUTPUT_JAVAC" nl.melp.TestRunner"
+	if [ $DEBUG -gt 1 ]; then
+		$run &
+		pid=$!
+		gdb -p $pid
+	else
+		$run
+	fi
 }
 
 build--clean() {
 	rm -rf "$ROOT/out";
 }
-
 
 build--all() {
 	build--clean

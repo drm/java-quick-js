@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 public class TestRunner {
 	private static final int debugLevel;
@@ -33,28 +34,61 @@ public class TestRunner {
 		}
 	}
 
-	public static void main(String[] args) {
-		printAtlevel(0, "Running tests\n");
-		for (Method m : tests) {
-			invokeTest(m, instantiateTest(m));
+	public static void main(String[] args) throws InterruptedException {
+		if (debugLevel > 1) {
+			System.err.println("Waiting a bit to have gdb attached...");
+			Thread.sleep(5_000);
+			System.err.println("Continuing.");
 		}
-		printAtlevel(0, "Done.\n\n");
+
+		printAtlevel(0, "Running tests\n");
+
+		int num_fails = 0;
+		int num_runs = 0;
+		List<Method> failed = new LinkedList<>();
+		for (Method m : tests) {
+			if (!invokeTest(m, instantiateTest(m))) {
+				num_fails ++;
+				failed.add(m);
+			}
+			num_runs ++;
+		}
+
+		printAtlevel(0, "\nDone (%d tests, %d failures).\n\n", num_runs, num_fails);
+		if (num_fails > 0) {
+			printAtlevel(0, "Failed tests:\n");
+			for (Method m : failed) {
+				printAtlevel(0, " - %s\n", m);
+			}
+		}
 	}
 
-	private static void invokeTest(Method m, Object test) {
-		printAtlevel(1, m.getClass().getCanonicalName() + "." + m.getName() + ": ");
+	private static boolean invokeTest(Method m, Object test) {
+		printAtlevel(1, "%s: ", m.getName());
 
 		try {
-			m.invoke(test);
+			try {
+				m.invoke(test);
+			} catch (InvocationTargetException e) {
+				printAtlevel(0, "F");
+				printAtlevel(1, "Failed: %s\n", e.getCause().getMessage());
+				return false;
+			}
 			printAtlevel(1, "OK\n");
+			printAtlevel(0, ".");
+			return true;
 		} catch (Exception e) {
 			printAtlevel(1, "EXCEPTION [" + e + "]\n");
-			throw new RuntimeException(e);
+			if (debugLevel > 1) {
+				e.printStackTrace();
+			}
+			printAtlevel(0, "E");
 		}
+		return false;
 	}
 
 	private static void printAtlevel(int level, String theString, Object... args) {
-		if (debugLevel >= level) {
+		if (debugLevel == level) {
 			System.out.printf(theString, args);
 		}
 	}
