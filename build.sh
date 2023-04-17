@@ -99,6 +99,17 @@ build--all() {
 	build--runtest
 }
 
+build--package() {
+	VERSION="$(git describe)"
+
+	build--clean
+	build--all
+	( cd out/java && jar cf ../java-quick-js-$VERSION.jar $(find . -name "*.class"))
+
+	echo out/java-quick-js-$VERSION.jar written.
+	echo ""
+}
+
 if [ "$#" -eq 0 ]; then
 	build--all;
 else
