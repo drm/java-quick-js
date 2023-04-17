@@ -25,9 +25,56 @@ public class Qjs {
 		return null;
 	}
 
-	public static void main(String[] args) {
-		// implement compilation to custom bytecode format.
-		// command line interface for evaluation
+	private static void usage() {
+		System.out.printf("""
+			Usage:
+			
+			java -Djava.library.path=out -cp out/java %s [OPTIONS]
+			
+			With OPTIONS being (a combination of) the following:
+			
+				--run path/to/script.js
+					
+					Evaluate the script and print the resulting string.
+				
+				--eval 'js-code;'
+					
+					Evaluate the js-code and print the resulting string.
+				
+				--compile path/to/src.js path/to/src.js.bin
+					
+					Compile the bytecode for src.js and save it in src.js.bin
+			""",
+			Qjs.class.getCanonicalName()
+		);
+	}
+
+	public static void main(String[] args) throws Exception {
+		if (args.length == 0) {
+			usage();
+		} else {
+			try {
+				for (int i = 0; i < args.length; i ++) {
+					String s = args[i];
+					switch (s) {
+						case "--run":
+							System.out.println(Qjs.evalPath(Path.of(args[++i])));
+							break;
+						case "--eval":
+							System.out.println(Qjs.eval(args[++i]));
+							break;
+						case "--compile": {
+							final Path src = Path.of(args[++i]);
+							final Path tgt = Path.of(args[++i]);
+							System.out.println(Qjs.compile(src, tgt));
+							break;
+						}
+					}
+				}
+			} catch (IndexOutOfBoundsException e) {
+				usage();
+			}
+		}
 	}
 
 	public static class Runtime implements AutoCloseable {
@@ -90,6 +137,14 @@ public class Qjs {
 		try (Runtime r = createRuntime()) {
 			try (Context c = r.createContext()) {
 				return c.eval(s);
+			}
+		}
+	}
+
+	public static String evalPath(Path s) throws Exception {
+		try (Runtime r = createRuntime()) {
+			try (Context c = r.createContext()) {
+				return c.evalPath(s);
 			}
 		}
 	}
