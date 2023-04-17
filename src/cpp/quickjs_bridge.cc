@@ -1,5 +1,6 @@
 #include "quickjs_bridge.h"
 #include "quickjs-libc.h"
+#include <cassert>
 
 int dump_memory = 1; // boolean
 size_t memory_limit = 0; // number
@@ -48,7 +49,6 @@ JSContext *create_context(JSRuntime *rt)
 		return NULL;
 	}
 
-//	js_std_eval_binary(ctx, qjsc_combined, qjsc_combined_size, 0);
 	return ctx;
 }
 
@@ -65,4 +65,28 @@ JSContext *duplicate_context(JSContext *ctx) {
 
 void destroy_context(JSContext *ctx) {
 	JS_FreeContext(ctx);
+}
+
+bool write_bytecode(JSContext *ctx, JSValue obj, char *tgt_path) {
+	assert(sizeof(uint8_t) == 1);
+	FILE *fp = fopen(tgt_path, "w");
+    if (!fp) {
+    	error("Can't write to file");
+    	return false;
+    }
+
+	uint8_t *out_buf;
+    size_t out_buf_len;
+    out_buf = JS_WriteObject(ctx, &out_buf_len, obj, JS_WRITE_OBJ_BYTECODE);
+    if (!out_buf) {
+        js_std_dump_error(ctx);
+        return false;
+    }
+	size_t written = fwrite(out_buf, sizeof(uint8_t), out_buf_len, fp);
+	if (written != out_buf_len) {
+		error("Written bytes doesn't match size??");
+	}
+	fclose(fp);
+    js_free(ctx, out_buf);
+    return true;
 }

@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <stdio.h>
 #include <string.h>
+#include <cassert>
 
 #include "jni_helper.h"
 #include "quickjs_bridge.h"
@@ -86,6 +87,57 @@ JNIEXPORT void JNICALL Java_nl_melp_qjs_JNI__1destroyContext (JNIEnv *, jclass, 
 
 JNIEXPORT jlong JNICALL Java_nl_melp_qjs_JNI__1duplicateContext(JNIEnv *, jclass, jlong ctx) {
 	return reinterpret_cast<jlong>(duplicate_context(reinterpret_cast<JSContext *>(ctx)));
+}
+
+JNIEXPORT jbyteArray JNICALL Java_nl_melp_qjs_JNI__1evalBinaryPath(JNIEnv *env, jclass, jlong ctx_, jbyteArray path) {
+	assert(sizeof(uint8_t) == 1);
+	JSContext *ctx = reinterpret_cast<JSContext*>(ctx_);
+
+	char *bin_path = allocate_cstring(env, path);
+
+	FILE *fd = fopen(bin_path, "rb");
+	fseek(fd, 0, SEEK_END);
+	long fsize = ftell(fd);
+	fseek(fd, 0, SEEK_SET);
+	uint8_t *string = (uint8_t*)malloc(fsize + 1);
+	fread(string, fsize, 1, fd);
+	fclose(fd);
+
+    JSValue obj;
+    obj = JS_ReadObject(ctx, string, fsize, JS_READ_OBJ_BYTECODE);
+    jbyteArray ret = nullptr;
+    if (JS_IsException(obj)) {
+    	js_std_dump_error(ctx);
+    } else {
+    	JSValue val = JS_EvalFunction(ctx, obj);
+    	ret = handle_return(env, ctx, val);
+    }
+// Not sure why this triggers a segfault.
+//    JS_FreeValue(ctx, obj);
+
+  	free(bin_path);
+  	free(string);
+
+  	return ret;
+}
+
+JNIEXPORT void JNICALL Java_nl_melp_qjs_JNI__1compile(JNIEnv *env, jclass, jlong ctx_, jbyteArray src, jbyteArray tgt) {
+	JSContext *ctx = reinterpret_cast<JSContext *>(ctx_);
+
+	char *src_path = allocate_cstring(env, src);
+	char *tgt_path = allocate_cstring(env, tgt);
+
+	size_t buf_len = 0;
+    uint8_t *buf;
+    buf = js_load_file(ctx, &buf_len, src_path);
+	JSValue val = JS_Eval(ctx, reinterpret_cast<const char *>(buf), buf_len, src_path, JS_EVAL_TYPE_GLOBAL | JS_EVAL_FLAG_COMPILE_ONLY);
+	free(buf);
+
+	write_bytecode(reinterpret_cast<JSContext *>(ctx_), val, tgt_path);
+
+	JS_FreeValue(ctx, val);
+	free(src_path);
+	free(tgt_path);
 }
 
 } // extern "C"

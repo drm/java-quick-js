@@ -4,6 +4,21 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class Qjs {
+	private static byte[] toBytes(final String s) {
+		return s.getBytes(StandardCharsets.UTF_8);
+	}
+
+	private static byte[] toBytes(final Path f) {
+		return toBytes(f.toAbsolutePath().toString());
+	}
+
+	private static String fromBytes(final byte[] bytes) {
+		if (bytes != null) {
+			return new String(bytes, StandardCharsets.UTF_8);
+		}
+		return null;
+	}
+
 	public static void main(String[] args) {
 		// implement compilation to custom bytecode format.
 		// command line interface for evaluation
@@ -40,23 +55,24 @@ public class Qjs {
 		}
 
 		public String eval(String code) {
-			return handleBytes(JNI._eval(ctx, code.getBytes(StandardCharsets.UTF_8)));
-		}
-
-		private static String handleBytes(final byte[] bytes) {
-			if (bytes != null) {
-				return new String(bytes, StandardCharsets.UTF_8);
-			}
-			return null;
+			return fromBytes(JNI._eval(ctx, toBytes(code)));
 		}
 
 
 		public String evalPath(Path pathname) {
-			return handleBytes(JNI._evalPath(ctx, pathname.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8)));
+			return fromBytes(JNI._evalPath(ctx, pathname.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8)));
 		}
 
 		public void close() {
 			JNI._destroyContext(ctx);
+		}
+
+		public String evalBinaryPath(Path pathname) {
+			return fromBytes(JNI._evalBinaryPath(ctx, pathname.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8)));
+		}
+
+		public boolean compile(Path src, Path tgt) {
+			return JNI._compile(ctx, toBytes(src), toBytes(tgt));
 		}
 	}
 
@@ -69,6 +85,14 @@ public class Qjs {
 		try (Runtime r = createRuntime()) {
 			try (Context c = r.createContext()) {
 				return c.eval(s);
+			}
+		}
+	}
+
+	public static boolean compile(Path src, Path tgt) throws Exception {
+		try (Runtime r = createRuntime()) {
+			try (Context c = r.createContext()) {
+				return c.compile(src, tgt);
 			}
 		}
 	}

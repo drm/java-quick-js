@@ -8,5 +8,6 @@ JSContext *create_context(JSRuntime *);
 void destroy_runtime(JSRuntime*);
 void destroy_context(JSContext*);
 JSContext *duplicate_context(JSContext*);
+bool write_bytecode(JSContext *ctx, JSValue obj, char *tgt_path);
 
 #endif

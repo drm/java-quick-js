@@ -14,4 +14,8 @@ class JNI {
 	static native void _destroyContext(long ctx);
 
 	static native long _duplicateContext(long ctx);
+
+	static native byte[] _evalBinaryPath(long ctx, byte[] bytes);
+
+	static native boolean _compile(long ctx, byte[] srcpath, byte[] target);
 }

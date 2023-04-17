@@ -29,7 +29,7 @@ build--java() {
 build--so() {
 	local flags="";
 	if [ "$DEBUG" -gt 0 ]; then
-		flags="-g -DNDEBUG";
+		flags="-g";
 	fi;
 
 	mkdir -p "$ROOT/out";

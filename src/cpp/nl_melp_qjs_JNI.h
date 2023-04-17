@@ -63,6 +63,22 @@ JNIEXPORT void JNICALL Java_nl_melp_qjs_JNI__1destroyContext
 JNIEXPORT jlong JNICALL Java_nl_melp_qjs_JNI__1duplicateContext
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     nl_melp_qjs_JNI
+ * Method:    _evalBinaryPath
+ * Signature: (J[B)[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_nl_melp_qjs_JNI__1evalBinaryPath
+  (JNIEnv *, jclass, jlong, jbyteArray);
+
+/*
+ * Class:     nl_melp_qjs_JNI
+ * Method:    _compile
+ * Signature: (J[B[B)Z
+ */
+JNIEXPORT jboolean JNICALL Java_nl_melp_qjs_JNI__1compile
+  (JNIEnv *, jclass, jlong, jbyteArray, jbyteArray);
+
 #ifdef __cplusplus
 }
 #endif
