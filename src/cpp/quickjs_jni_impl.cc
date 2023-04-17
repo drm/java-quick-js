@@ -1,3 +1,10 @@
+/**
+ * This file is part of https://github.com/drm/java-quick-js. Refer to the
+ * project page for licensing and documentation.
+ *
+ * (c) Copyright 2023, Gerard van Helden
+ */
+
 #include <jni.h>
 #include <stdio.h>
 #include <string.h>

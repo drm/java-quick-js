@@ -1,8 +1,14 @@
+/**
+ * This file is part of https://github.com/drm/java-quick-js. Refer to the
+ * project page for licensing and documentation.
+ *
+ * (c) Copyright 2023, Gerard van Helden
+ */
+
 package nl.melp.qjs;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-
 public class Qjs {
 	private static byte[] toBytes(final String s) {
 		return s.getBytes(StandardCharsets.UTF_8);
@@ -57,7 +63,6 @@ public class Qjs {
 		public String eval(String code) {
 			return fromBytes(JNI._eval(ctx, toBytes(code)));
 		}
-
 
 		public String evalPath(Path pathname) {
 			return fromBytes(JNI._evalPath(ctx, pathname.toAbsolutePath().toString().getBytes(StandardCharsets.UTF_8)));

@@ -1,26 +1,47 @@
 #!/bin/bash
+##
+## This file is part of https://github.com/drm/java-quick-js. Refer to the
+## project page for licensing and documentation.
+##
+## (c) Copyright 2023, Gerard van Helden
+##
 
 set -euo pipefail
 
-export ROOT="$(cd "$(dirname "$0")" && pwd)"
+export ROOT; ROOT="$(cd "$(dirname "$0")" && pwd)"
 export DEBUG="${DEBUG:-0}"
-export JAVAC="$(which javac)"
-export JAVA="$(which java)"
-export CC="$(which g++)"
+export JAVAC; JAVAC="$(which javac)"
+export JAVA; JAVA="$(which java)"
+export CC; CC="$(which g++)"
 export OUTPUT_JAVAC="$ROOT/out/java"
 export OUTPUT_SO="$ROOT/out/libquickjs.so"
-export QJS_HOME="/home/gerard/git/bellard/quickjs"
+export QJS_HOME="$ROOT/../quickjs"
 export QJS_LIB="$QJS_HOME/libquickjs.a"
+
+if ! [ -d "$QJS_HOME" ]; then
+	echo "QJS_HOME=$QJS_HOME does not exist."
+	echo "Please clone https://github.com/drm/quickjs at the specified location and try again"
+	exit;
+fi
 
 if [ "${DEBUG:-}" -gt 0 ]; then
 	if [ "${DEBUG:-}" -gt 1 ]; then
 		set -x
 	fi
+	echo ""
 	echo "env vars:"
-	env | grep -P '^(DEBUG|JAVAC|JAVA)='
-	echo "-------"
+	echo "-----------------------------------------"
+	env
+	echo "-----------------------------------------"
 	echo ""
 fi
+
+build--qjs-static() {
+	(
+		cd $QJS_HOME
+		make
+	)
+}
 
 build--java() {
 	find src/java test/java -name "*.java" -exec "$JAVAC" -h $ROOT/src/cpp -d "$OUTPUT_JAVAC" '{}' +
@@ -71,6 +92,7 @@ build--clean() {
 
 build--all() {
 	build--clean
+	build--qjs-static
 	build--java
 	build--so
 	build--runtest

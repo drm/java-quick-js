@@ -1,5 +1,11 @@
-package nl.melp.qjs;
+/**
+ * This file is part of https://github.com/drm/java-quick-js. Refer to the
+ * project page for licensing and documentation.
+ *
+ * (c) Copyright 2023, Gerard van Helden
+ */
 
+package nl.melp.qjs;
 
 import nl.melp.qjs.Qjs.Context;
 import nl.melp.qjs.Qjs.Runtime;
@@ -10,7 +16,6 @@ import static nl.melp.qjs.Assert.assertEquals;
 
 @SuppressWarnings("unused")
 public class QuickjsTest {
-
 	private static final int num_runs;
 	static {
 		int n;

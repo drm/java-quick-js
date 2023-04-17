@@ -1,3 +1,10 @@
+/**
+ * This file is part of https://github.com/drm/java-quick-js. Refer to the
+ * project page for licensing and documentation.
+ *
+ * (c) Copyright 2023, Gerard van Helden
+ */
+
 package nl.melp.qjs;
 
 import java.lang.reflect.InvocationTargetException;
@@ -7,8 +14,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Simple ad-hoc test runner, utilizing shell vars as much as possible.
+ */
 public class TestRunner {
+	/**
+	 * Debug level, read from DEBUG shell var.
+	 *
+	 * If >= 1, output is a bit more verbose and stack traces are printed
+	 * if >= 2, Sleeps a bit at the start of the script to allow gdb to connect.
+	 */
 	private static final int debugLevel;
+
 	static {
 		int d;
 		try {
@@ -18,14 +35,16 @@ public class TestRunner {
 		}
 		debugLevel = d;
 	}
-	private static Class[] testClasses = new Class[]{
-		QuickjsTest.class
-	};
 
-	private static List<Method> tests = new LinkedList<>();
-
+	/**
+	 * Methods to use as tests.
+	 */
+	private static final List<Method> tests = new LinkedList<>();
 	static {
-		for (Class<?> c : testClasses) {
+		final Class<?>[] classes = {
+			QuickjsTest.class
+		};
+		for (Class<?> c : classes) {
 			for (Method m : c.getDeclaredMethods()) {
 				if (m.getName().startsWith("test") && Modifier.isPublic(m.getModifiers())) {
 					tests.add(m);
@@ -34,6 +53,13 @@ public class TestRunner {
 		}
 	}
 
+	/**
+	 * Main runner. Doesn't take any arguments.
+	 * Tries to run all the test methods, specified above. If the TESTS shell variable is available,
+	 * only run the methods of which the name contain any of the words in tests, for example:
+	 *
+	 * TESTS="foo bar baz"
+	 */
 	public static void main(String[] args) throws InterruptedException {
 		if (debugLevel > 1) {
 			System.err.println("Waiting a bit to have gdb attached...");
@@ -47,7 +73,7 @@ public class TestRunner {
 			String[] tests = System.getenv("TESTS").split("[ \n\r\t]");
 			filter = (Method m) -> {
 				for (String ptn : tests) {
-					if (m.toString().contains(ptn)) {
+					if (m.toString().toLowerCase().contains(ptn.toLowerCase())) {
 						return true;
 					}
 				}

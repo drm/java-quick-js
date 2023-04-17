@@ -1,3 +1,10 @@
+/**
+ * This file is part of https://github.com/drm/java-quick-js. Refer to the
+ * project page for licensing and documentation.
+ *
+ * (c) Copyright 2023, Gerard van Helden
+ */
+
 #ifndef __INCLUDED_QUICKJS_BRIDGE_H
 #define __INCLUDED_QUICKJS_BRIDGE_H
 

@@ -1,5 +1,11 @@
-package nl.melp.qjs;
+/**
+ * This file is part of https://github.com/drm/java-quick-js. Refer to the
+ * project page for licensing and documentation.
+ *
+ * (c) Copyright 2023, Gerard van Helden
+ */
 
+package nl.melp.qjs;
 public class Assert {
 	public static void assertEquals(Object x, Object y) {
 		if (x == null && y == null) {
