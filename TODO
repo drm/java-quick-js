@@ -1,0 +1,4 @@
+[ ] Manage pointers in Java
+[ ] Create a patch for the Makefile for -fPIC
+[ ] Create a one-off build script
+[ ] Implement poolingtest

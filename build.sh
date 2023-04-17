@@ -29,7 +29,7 @@ build--java() {
 build--so() {
 	local flags="";
 	if [ "$DEBUG" -gt 0 ]; then
-		flags="-g";
+		flags="-g -DNDEBUG";
 	fi;
 
 	mkdir -p "$ROOT/out";
@@ -44,7 +44,9 @@ build--so() {
 		-L $QJS_HOME \
 		-o $OUTPUT_SO \
 		-fPIC \
-		"$ROOT/src/cpp/quickjs_jni.cc" \
+		"$ROOT/src/cpp/jni_helper.cc" \
+		"$ROOT/src/cpp/quickjs_bridge.cc" \
+		"$ROOT/src/cpp/quickjs_jni_impl.cc" \
 		-ldl \
 		-lpthread \
 		-lquickjs
@@ -53,7 +55,7 @@ build--so() {
 }
 
 build--runtest() {
-	run="$JAVA -Djava.library.path=$ROOT/out -cp "$OUTPUT_JAVAC" nl.melp.TestRunner"
+	run="$JAVA -Djava.library.path=$ROOT/out -cp "$OUTPUT_JAVAC" nl.melp.qjs.TestRunner"
 	if [ $DEBUG -gt 1 ]; then
 		$run &
 		pid=$!

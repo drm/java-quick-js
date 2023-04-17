@@ -1,11 +1,11 @@
-package nl.melp;
+package nl.melp.qjs;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.function.Function;
 
 public class TestRunner {
 	private static final int debugLevel;
@@ -41,17 +41,33 @@ public class TestRunner {
 			System.err.println("Continuing.");
 		}
 
+		Function<Method, Boolean> filter = null;
+
+		if (System.getenv("TESTS") != null) {
+			String[] tests = System.getenv("TESTS").split("[ \n\r\t]");
+			filter = (Method m) -> {
+				for (String ptn : tests) {
+					if (m.toString().contains(ptn)) {
+						return true;
+					}
+				}
+				return false;
+			};
+		}
+
 		printAtlevel(0, "Running tests\n");
 
 		int num_fails = 0;
 		int num_runs = 0;
 		List<Method> failed = new LinkedList<>();
 		for (Method m : tests) {
-			if (!invokeTest(m, instantiateTest(m))) {
-				num_fails ++;
-				failed.add(m);
+			if (filter == null || filter.apply(m)) {
+				if (!invokeTest(m, instantiateTest(m))) {
+					num_fails ++;
+					failed.add(m);
+				}
+				num_runs ++;
 			}
-			num_runs ++;
 		}
 
 		printAtlevel(0, "\nDone (%d tests, %d failures).\n\n", num_runs, num_fails);
@@ -71,6 +87,10 @@ public class TestRunner {
 				m.invoke(test);
 			} catch (InvocationTargetException e) {
 				printAtlevel(0, "F");
+				if (debugLevel > 0) {
+					e.getCause().printStackTrace();
+				}
+
 				printAtlevel(1, "Failed: %s\n", e.getCause().getMessage());
 				return false;
 			}
@@ -79,7 +99,7 @@ public class TestRunner {
 			return true;
 		} catch (Exception e) {
 			printAtlevel(1, "EXCEPTION [" + e + "]\n");
-			if (debugLevel > 1) {
+			if (debugLevel > 0) {
 				e.printStackTrace();
 			}
 			printAtlevel(0, "E");
