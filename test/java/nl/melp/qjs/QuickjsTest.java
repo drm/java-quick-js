@@ -84,16 +84,36 @@ public class QuickjsTest {
 	}
 
 	public void testCompile() throws Exception {
-		final Path binPath = Path.of("resources/js/hello-world-string.js.bin");
-		try (Runtime rt = Qjs.createRuntime()) {
-			try (Context c = rt.createContext()) {
-				c.compile(Path.of("resources/js/hello-world-string.js"), binPath);
+		{
+			final Path binPath = Path.of("resources/js/hello-world-string.js.bin");
+			try (Runtime rt = Qjs.createRuntime()) {
+				try (Context c = rt.createContext()) {
+					c.compile(Path.of("resources/js/hello-world-string.js"), binPath);
+				}
+			}
+
+			try (Runtime rt = Qjs.createRuntime()) {
+				try (Context c = rt.createContext()) {
+					assertEquals("Hello world", c.evalBinaryPath(binPath));
+				}
 			}
 		}
+		{
+			final Path binPath = Path.of("resources/js/hello-world-fn.js.bin");
+			try (Runtime rt = Qjs.createRuntime()) {
+				try (Context c = rt.createContext()) {
+					c.compile(Path.of("resources/js/hello-world-fn.js"), binPath);
+				}
+			}
 
-		try (Runtime rt = Qjs.createRuntime()) {
-			try (Context c = rt.createContext()) {
-				assertEquals("Hello world", c.evalBinaryPath(binPath));
+			try (Runtime rt = Qjs.createRuntime()) {
+				try (Context template = rt.createContext()) {
+					template.evalBinaryPath(binPath);
+
+					try (Context c = template.duplicate()) {
+						assertEquals("Hello World", c.eval("fn(['Hello', 'World'].join(' '))"));
+					}
+				}
 			}
 		}
 	}
