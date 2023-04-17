@@ -23,16 +23,22 @@ public class QuickjsTest {
 		assertEquals("blu", Qjs.eval("\"blahbluh\".match(/b../g)[1]"));
 	}
 
-	public void xxxtestReact() throws Exception {
-		assertEquals(
-			"<body bgcolor=\"red\">Hello world</body>",
-			Qjs.eval(
-				"ReactDOMServer.renderToStaticMarkup(React.createElement('body', {bgcolor: 'red'}, ['Hello world']));"
-			)
-		);
+	public void testReact() throws Exception {
+		try (Runtime rt = Qjs.createRuntime()) {
+			try (Context template = rt.createContext()) {
+				template.evalPath(Path.of("resources/js/combined.js"));
+
+				assertEquals(
+					"<body bgcolor=\"red\">Hello world</body>",
+					template.eval(
+						"ReactDOMServer.renderToStaticMarkup(React.createElement('body', {bgcolor: 'red'}, ['Hello world']));"
+					)
+				);
+			}
+		}
 	}
 
-	public void xxxtestPerf() throws Exception {
+	public void testTemplatePerformance() throws Exception {
 		long t_start = System.nanoTime();
 		try (Runtime rt = Qjs.createRuntime()) {
 			try (Context template = rt.createContext()) {
@@ -40,7 +46,7 @@ public class QuickjsTest {
 
 				for (int i = 0; i < num_runs; i ++) {
 					try (Context c = template.duplicate()) {
-						System.out.println(Qjs.eval(
+						System.out.println(c.eval(
 							"ReactDOMServer.renderToStaticMarkup(React.createElement('body', {bgcolor: 'red'}, ['Hello world']));"
 						));
 					}
