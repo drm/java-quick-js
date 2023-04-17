@@ -12,6 +12,7 @@ export ROOT; ROOT="$(cd "$(dirname "$0")" && pwd)"
 export DEBUG="${DEBUG:-0}"
 export JAVAC; JAVAC="$(which javac)"
 export JAVA; JAVA="$(which java)"
+export JAVA_HOME; JAVA_HOME="$($JAVA -XshowSettings:properties -version 2>&1 > /dev/null | awk -F '=' '/java.home/ { print $2 }')"
 export CC; CC="$(which g++)"
 export OUTPUT_JAVAC="$ROOT/out/java"
 export OUTPUT_SO="$ROOT/out/libquickjs.so"
@@ -58,8 +59,8 @@ build--so() {
 		-Wall \
 		-shared \
 		$flags \
-		-I /usr/lib/jvm/java-17-openjdk-amd64/include/ \
-		-I /usr/lib/jvm/java-17-openjdk-amd64/include/linux/ \
+		-I $JAVA_HOME/include/ \
+		-I $JAVA_HOME/include/linux/ \
 		-I $QJS_HOME/ \
 		-I "$ROOT/src/cpp" \
 		-L $QJS_HOME \
@@ -87,11 +88,11 @@ build--runtest() {
 }
 
 build--clean() {
+	( cd "$QJS_HOME" && make clean )
 	rm -rf "$ROOT/out";
 }
 
 build--all() {
-	build--clean
 	build--qjs-static
 	build--java
 	build--so
