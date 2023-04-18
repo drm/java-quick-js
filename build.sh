@@ -51,7 +51,7 @@ build--java() {
 build--so() {
 	local flags="";
 	if [ "$DEBUG" -gt 0 ]; then
-		flags="-g";
+		flags="-g"; # overwrites default
 	fi;
 
 	mkdir -p "$ROOT/out";

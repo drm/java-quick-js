@@ -65,14 +65,19 @@ JNIEXPORT jbyteArray JNICALL Java_nl_melp_qjs_JNI__1evalPath(JNIEnv *env, jclass
 	JSContext *ctx = reinterpret_cast<JSContext *>(ctx_);
 
 	size_t buf_len = 0;
-    uint8_t *buf;
+	uint8_t *buf;
 	char *str_path = allocate_cstring(env, path);
-    buf = js_load_file(ctx, &buf_len, str_path);
+	buf = js_load_file(ctx, &buf_len, str_path);
+
+	if (!buf) {
+		fprintf(stderr, "Could not read file.");
+		free(str_path);
+		return NULL;
+	}
+
 	JSValue val = JS_Eval(ctx, reinterpret_cast<const char *>(buf), buf_len, str_path, JS_EVAL_TYPE_GLOBAL);
-
-	free(str_path);
 	js_free(ctx, buf);
-
+	free(str_path);
 	return handle_return(env, ctx, val);
 }
 
@@ -110,17 +115,17 @@ JNIEXPORT jbyteArray JNICALL Java_nl_melp_qjs_JNI__1evalBinaryPath(JNIEnv *env, 
 	fread(string, fsize, 1, fd);
 	fclose(fd);
 
-    JSValue obj;
-    obj = JS_ReadObject(ctx, string, fsize, JS_READ_OBJ_BYTECODE);
-    jbyteArray ret = nullptr;
-    if (JS_IsException(obj)) {
-    	js_std_dump_error(ctx);
-    } else {
-    	JSValue val = JS_EvalFunction(ctx, obj);
-    	ret = handle_return(env, ctx, val);
-    }
+	JSValue obj;
+	obj = JS_ReadObject(ctx, string, fsize, JS_READ_OBJ_BYTECODE);
+	jbyteArray ret = nullptr;
+	if (JS_IsException(obj)) {
+		js_std_dump_error(ctx);
+	} else {
+		JSValue val = JS_EvalFunction(ctx, obj);
+		ret = handle_return(env, ctx, val);
+	}
 // Not sure why this triggers a segfault.
-//    JS_FreeValue(ctx, obj);
+//	JS_FreeValue(ctx, obj);
 
   	free(bin_path);
   	free(string);
@@ -135,8 +140,8 @@ JNIEXPORT void JNICALL Java_nl_melp_qjs_JNI__1compile(JNIEnv *env, jclass, jlong
 	char *tgt_path = allocate_cstring(env, tgt);
 
 	size_t buf_len = 0;
-    uint8_t *buf;
-    buf = js_load_file(ctx, &buf_len, src_path);
+	uint8_t *buf;
+	buf = js_load_file(ctx, &buf_len, src_path);
 	JSValue val = JS_Eval(ctx, reinterpret_cast<const char *>(buf), buf_len, src_path, JS_EVAL_TYPE_GLOBAL | JS_EVAL_FLAG_COMPILE_ONLY);
 	free(buf);
 

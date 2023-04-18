@@ -42,7 +42,8 @@ public class TestRunner {
 	private static final List<Method> tests = new LinkedList<>();
 	static {
 		final Class<?>[] classes = {
-			QuickjsTest.class
+			QuickjsTest.class,
+			Regression.class
 		};
 		for (Class<?> c : classes) {
 			for (Method m : c.getDeclaredMethods()) {

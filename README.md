@@ -14,12 +14,23 @@ either contributing or persuading me to implement it.
 
 ## Preliminary testing results
 
-Overall, this library seems to outperform [mv8](https://github.com/drm/mv8) by
-an order of magnitude, for one-off render calls, which is the primary concern 
-of the mv8 implementation too. So, just to be able to render React components 
-server-side, this library seems to be the way to go. If not for that, the ease
-of use and simple code base really improves the developer experience anyway.
-It is not hard to debug it with gdb, for example.
+I started this project to research performance in comparison with V8. Obviously, 
+V8 is much more sophisticated and optimized, so for common workloads, V8 is 
+probably the better choice.
+
+However, this library seems to outperform V8 by an order of magnitude, for
+*small* one-off calls and low memory consumption.
+
+I haven't really devised any definitive performance test, but based on some 
+real-world testing, V8 starts to outshine at higher memory consumption and 
+JIT optimisation by a landslide.
+
+Nonetheless, if you don't expect high loads, and your here for simplicity rather
+than performance, QuickJS is much easier to build (takes about 25 seconds on my
+machine, rather than the 20+ minutes (!) for V8...).
+
+Take a look at [mv8](https://github.com/drm/mv8) if you need V8 bindings in
+Java.
 
 ## Usage
 
@@ -70,3 +81,9 @@ try (var rt = Qjs.createRuntime()) {
     }
 } 
 ```
+
+# Questions, comments or remarks?
+
+Feel free to ping me at 
+[https://github.com/drm/java-quick-js](https://github.com/drm/java-quick-js) 
+by creating an issue or starting a discussion.

@@ -35,6 +35,7 @@ public class QuickjsTest {
 		assertEquals("string", Qjs.eval("typeof JSON.stringify({});"));
 		assertEquals("Hello", Qjs.eval("'Hello'"));
 		assertEquals("blu", Qjs.eval("\"blahbluh\".match(/b../g)[1]"));
+		assertEquals(null, Qjs.eval("var global = this;"));
 	}
 
 	public void testReact() throws Exception {
@@ -80,7 +81,6 @@ public class QuickjsTest {
 				assertEquals("Hello world", c.evalPath(Path.of("resources/js/hello-world-string.js")));
 			}
 		}
-
 	}
 
 	public void testCompile() throws Exception {
@@ -116,6 +116,45 @@ public class QuickjsTest {
 				}
 			}
 		}
+	}
+
+	public void testRealworldPrecompiledTemplatePerformance() throws Exception {
+		final Path srcFile = Path.of("resources/js/realworld/combined.js");
+		if (!srcFile.toFile().exists()) {
+			// this is an actual real world example that is not part of the public
+			// repository.
+			return;
+		}
+
+		long t_start = System.nanoTime();
+		final Path binary = Path.of("resources/js/realworld/combined.js.bin");
+		assertEquals(true, Qjs.compile(srcFile, binary));
+		final long compilation_dur_ns = (System.nanoTime() - t_start);
+		long total_duplication_ns = 0;
+		try (Runtime rt = Qjs.createRuntime()) {
+			try (Context template = rt.createContext()) {
+				template.evalBinaryPath(binary);
+
+				for (int i = 0; i < num_runs; i ++) {
+					long t_pre = System.nanoTime();
+					Context c = template.duplicate();
+					total_duplication_ns += (System.nanoTime() - t_pre);
+					c.evalPath(Path.of("resources/js/realworld/input.js"));
+					c.close();
+				}
+			}
+		}
+		final long dur_ns = (System.nanoTime() - t_start);
+		System.out.println(total_duplication_ns);
+		System.out.printf(
+			"Num runs: %d, total runtime: %.2f s, compilation time: %.2f ms, duplication time: %.2f s, avg(incl. compilation): %.2f ms/c, avg(without compilation): %.2f ms/c\n",
+			num_runs,
+			dur_ns / 1_000_000_000F,
+			compilation_dur_ns / 1_000_000F,
+			total_duplication_ns / 1_000_000_000F,
+			dur_ns / 1_000_000F / num_runs,
+			(dur_ns - compilation_dur_ns) / 1_000_000F / num_runs
+		);
 	}
 
 	public void testPrecompiledTemplatePerformance() throws Exception {

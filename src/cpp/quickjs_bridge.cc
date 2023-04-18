@@ -9,8 +9,9 @@
 #include "quickjs-libc.h"
 #include <cassert>
 
+// TODO these need to be configurable
 int dump_memory = 1; // boolean
-size_t memory_limit = 0; // number
+size_t memory_limit = 1024 * 1024 * 40; // number
 size_t stack_size = 0; // number
 int dump_unhandled_promise_rejection = 1;
 int num_calls = 0;
@@ -34,10 +35,10 @@ JSRuntime *create_runtime()
 	if (stack_size != 0)
 		JS_SetMaxStackSize(rt, stack_size);
 
-    js_std_set_worker_new_context_func(create_context);
-    js_std_init_handlers(rt);
+	js_std_set_worker_new_context_func(create_context);
+	js_std_init_handlers(rt);
 
-    return rt;
+	return rt;
 }
 
 void destroy_runtime(JSRuntime *rt) {
@@ -77,23 +78,23 @@ void destroy_context(JSContext *ctx) {
 bool write_bytecode(JSContext *ctx, JSValue obj, char *tgt_path) {
 	assert(sizeof(uint8_t) == 1);
 	FILE *fp = fopen(tgt_path, "w");
-    if (!fp) {
-    	error("Can't write to file");
-    	return false;
-    }
+	if (!fp) {
+		error("Can't write to file");
+		return false;
+	}
 
 	uint8_t *out_buf;
-    size_t out_buf_len;
-    out_buf = JS_WriteObject(ctx, &out_buf_len, obj, JS_WRITE_OBJ_BYTECODE);
-    if (!out_buf) {
-        js_std_dump_error(ctx);
-        return false;
-    }
+	size_t out_buf_len;
+	out_buf = JS_WriteObject(ctx, &out_buf_len, obj, JS_WRITE_OBJ_BYTECODE);
+	if (!out_buf) {
+		js_std_dump_error(ctx);
+		return false;
+	}
 	size_t written = fwrite(out_buf, sizeof(uint8_t), out_buf_len, fp);
 	if (written != out_buf_len) {
 		error("Written bytes doesn't match size??");
 	}
 	fclose(fp);
-    js_free(ctx, out_buf);
-    return true;
+	js_free(ctx, out_buf);
+	return true;
 }

@@ -9,6 +9,8 @@ package nl.melp.qjs;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.function.Function;
+
 public class Qjs {
 	private static byte[] toBytes(final String s) {
 		return s.getBytes(StandardCharsets.UTF_8);
@@ -132,28 +134,25 @@ public class Qjs {
 		return new Runtime(JNI._createRuntime());
 	}
 
+	public static <T> T withContext(Function<Context, T> fn) {
+		try (Runtime rt = createRuntime()) {
+			try (Context ctx = rt.createContext()) {
+				return fn.apply(ctx);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public static String eval(String s) throws Exception {
-		try (Runtime r = createRuntime()) {
-			try (Context c = r.createContext()) {
-				return c.eval(s);
-			}
-		}
+		return withContext((ctx) -> ctx.eval(s));
 	}
 
 	public static String evalPath(Path s) throws Exception {
-		try (Runtime r = createRuntime()) {
-			try (Context c = r.createContext()) {
-				return c.evalPath(s);
-			}
-		}
+		return withContext((ctx) -> ctx.evalPath(s));
 	}
 
 	public static boolean compile(Path src, Path tgt) throws Exception {
-		try (Runtime r = createRuntime()) {
-			try (Context c = r.createContext()) {
-				return c.compile(src, tgt);
-			}
-		}
+		return withContext((ctx) -> ctx.compile(src, tgt));
 	}
 }
