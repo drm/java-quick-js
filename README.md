@@ -1,9 +1,13 @@
-# java-quickjs-jni
+# java-quick-js
 
 This provides a Java Native Interface (JNI) to
 [QuickJS](https://bellard.org/quickjs/).
 
-It's stable and I see no reason not to start using it in production if you see
+It's stable and I see no reason not to start using it in production, though
+I haven't myself.
+
+Be sure to stress test your implementation, as quickjs will break without
+warning if memory issues occur.
 
 
 ## API compatibility
