@@ -54,9 +54,9 @@ import nl.melp.qjs.Qjs;
 // ....
 
 try (var rt = Qjs.createRuntime()) {
-    try (var c = rt.createContext()) {
-        System.out.println(c.eval("['Hello', 'World'].join(' ');"));
-    }
+	try (var c = rt.createContext()) {
+		System.out.println(c.eval("['Hello', 'World'].join(' ');"));
+	}
 } 
 ```
 
@@ -71,7 +71,7 @@ To speed up loading the libraries, you can precompile them to bytecode.
 ```javascript
 // helloworld.js
 var fn = function (...args)({
-    return args.join(' '); 
+	return args.join(' '); 
 });
 ```
 
@@ -84,14 +84,14 @@ Qjs.compile("helloworld.js", "helloworld.js.bin");
 
 try (var rt = Qjs.createRuntime()) {
 	try (var template = rt.createContext()) {
-        rt.evalBinaryPath(Path.of("helloworld.js.bin"));
+		rt.evalBinaryPath(Path.of("helloworld.js.bin"));
 		
-        for (int i = 0; i < 10000; i++) {
-            try (var c = template.duplicate()) {
-                System.out.println(c.eval("fn(['Hello', 'World'])"));
-            }
-        }
-    }
+		for (int i = 0; i < 10000; i++) {
+			try (var c = template.duplicate()) {
+				System.out.println(c.eval("fn(['Hello', 'World'])"));
+			}
+		}
+	}
 } 
 ```
 
