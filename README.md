@@ -32,7 +32,7 @@ real-world testing, V8 starts to outshine at higher memory consumption and JIT
 optimisation by a landslide. Yes, dear frontenders, a 5MB bundle file of JS
 code may be a bit much... Maybe the backend really isn't the problem here.
 
-Nonetheless, if you don't expect high loads, and your here for simplicity
+Nonetheless, if you don't expect high loads, and you're here for simplicity
 rather than performance, QuickJS is much easier to build (takes about 25
 seconds on my machine, rather than the 20+ minutes (!) for V8...).
 
